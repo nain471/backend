@@ -1,18 +1,21 @@
 import express from "express";
 import jsonServer from "json-server";
 import auth from "json-server-auth";
+import fs from "fs";
 
 const server = express();
+server.use(express.json()); // 🔥 This is mandatory!
+
 const router = jsonServer.router("./data/db.json");
+server.db = router.db;
 const middlewares = jsonServer.defaults();
 
-// 🧱 Set access rules
-const rules = auth.rewriter({
-  products: 444,
-  featured_products: 444,
-  orders: 660,
-  users: 600,
-});
+// 📜 Load routes.json
+const rawRoutes = fs.readFileSync("./data/routes.json");
+const routes = JSON.parse(rawRoutes);
+const rules = auth.rewriter(routes); // load rules from file
+
+
 
 // 🌐 CORS setup
 server.use((req, res, next) => {
